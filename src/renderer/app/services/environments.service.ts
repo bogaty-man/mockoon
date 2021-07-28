@@ -170,7 +170,7 @@ export class EnvironmentsService extends Logger {
                 environmentData.environment
               ),
               // keep the first environment as active during load
-              { activeEnvironmentUUID: environmentsData[0].environment.uuid }
+              { activeEnvironment: environmentsData[0].environment }
             )
           );
         });

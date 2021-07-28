@@ -278,6 +278,9 @@ export const environmentReducer = (
 
     case ActionTypes.ADD_ENVIRONMENT: {
       const newEnvironment: Environment = action.environment;
+      const activeEnvironment: Environment = action.activeEnvironment
+        ? action.activeEnvironment
+        : newEnvironment;
       const afterUUID = action.afterUUID;
 
       const environments = [...state.environments];
@@ -306,14 +309,14 @@ export const environmentReducer = (
 
       newState = {
         ...state,
-        activeEnvironmentUUID: newEnvironment.uuid,
-        activeRouteUUID: newEnvironment.routes.length
-          ? newEnvironment.routes[0].uuid
+        activeEnvironmentUUID: activeEnvironment.uuid,
+        activeRouteUUID: activeEnvironment.routes.length
+          ? activeEnvironment.routes[0].uuid
           : null,
         activeRouteResponseUUID:
-          newEnvironment.routes.length &&
-          newEnvironment.routes[0].responses.length
-            ? newEnvironment.routes[0].responses[0].uuid
+          activeEnvironment.routes.length &&
+          activeEnvironment.routes[0].responses.length
+            ? activeEnvironment.routes[0].responses[0].uuid
             : null,
         activeTab: 'RESPONSE',
         activeView: 'ROUTE',

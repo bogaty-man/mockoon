@@ -156,7 +156,7 @@ export const addEnvironmentAction = (
   options?: {
     filePath?: string;
     afterUUID?: string;
-    activeEnvironmentUUID?: string;
+    activeEnvironment?: Environment;
   }
 ) =>
   <const>{
