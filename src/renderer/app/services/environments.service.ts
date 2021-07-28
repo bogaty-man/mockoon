@@ -323,7 +323,7 @@ export class EnvironmentsService extends Logger {
           : this.schemasBuilderService.buildEnvironment();
 
         this.store.update(
-          addEnvironmentAction(newEnvironment, filePath, afterUUID)
+          addEnvironmentAction(newEnvironment, { filePath, afterUUID })
         );
 
         this.uiService.scrollEnvironmentsMenu.next(ScrollDirection.BOTTOM);
