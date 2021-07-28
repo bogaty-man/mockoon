@@ -18,8 +18,7 @@ describe('Environments export', () => {
         'success',
         'Environments have been successfully exported'
       );
-      // wait for file save
-      await tests.app.client.pause(1000);
+      await tests.helpers.waitForAutosave();
       await tests.helpers.verifyObjectPropertyInFile(
         filePath,
         [
@@ -54,8 +53,7 @@ describe('Environments export', () => {
         'success',
         'Environment has been successfully exported'
       );
-      // wait for file save
-      await tests.app.client.pause(1000);
+      await tests.helpers.waitForAutosave();
       await tests.helpers.verifyObjectPropertyInFile(
         filePath,
         ['source', 'data.0.type', 'data.0.item.name', 'data.1'],

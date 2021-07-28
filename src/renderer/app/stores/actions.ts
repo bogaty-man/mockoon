@@ -149,17 +149,20 @@ export const moveRouteResponsesAction = (indexes: ReducerIndexes) =>
  * Add a new environment
  *
  * @param environment - environment to add
+ * @param options.activeEnvironmentUUID - if provided, keep another environment active instead of the one being added
  */
 export const addEnvironmentAction = (
   environment: Environment,
-  filePath?: string,
-  afterUUID?: string
+  options?: {
+    filePath?: string;
+    afterUUID?: string;
+    activeEnvironmentUUID?: string;
+  }
 ) =>
   <const>{
     type: ActionTypes.ADD_ENVIRONMENT,
     environment,
-    filePath,
-    afterUUID
+    ...options
   };
 
 /**

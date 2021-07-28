@@ -13,8 +13,7 @@ describe('OpenAPI export', () => {
 
     tests.helpers.selectMenuEntry('EXPORT_OPENAPI_FILE');
 
-    // wait for file save
-    await tests.app.client.pause(1000);
+    await tests.helpers.waitForAutosave();
 
     const exportedFile = await fs.readFile(filePath);
     const referenceFile = await fs.readFile(

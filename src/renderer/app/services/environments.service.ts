@@ -12,6 +12,7 @@ import { EMPTY, forkJoin, from, Observable, of, throwError } from 'rxjs';
 import {
   catchError,
   debounceTime,
+  distinctUntilChanged,
   filter,
   first,
   map,
@@ -40,7 +41,6 @@ import {
 import { DataService } from 'src/renderer/app/services/data.service';
 import { DialogsService } from 'src/renderer/app/services/dialogs.service';
 import { EventsService } from 'src/renderer/app/services/events.service';
-import { MigrationService } from 'src/renderer/app/services/migration.service';
 import { SchemasBuilderService } from 'src/renderer/app/services/schemas-builder.service';
 import { ServerService } from 'src/renderer/app/services/server.service';
 import { StorageService } from 'src/renderer/app/services/storage.service';
@@ -91,7 +91,6 @@ export class EnvironmentsService extends Logger {
     private eventsService: EventsService,
     private store: Store,
     private serverService: ServerService,
-    private migrationService: MigrationService,
     private schemasBuilderService: SchemasBuilderService,
     private uiService: UIService,
     private storageService: StorageService,
@@ -169,7 +168,9 @@ export class EnvironmentsService extends Logger {
             addEnvironmentAction(
               this.dataService.migrateAndValidateEnvironment(
                 environmentData.environment
-              )
+              ),
+              // keep the first environment as active during load
+              { activeEnvironmentUUID: environmentsData[0].environment.uuid }
             )
           );
         });
@@ -193,12 +194,13 @@ export class EnvironmentsService extends Logger {
    */
   public saveEnvironments(): Observable<void> {
     return this.store.select('environments').pipe(
+      distinctUntilChanged(),
       tap(() => {
         // saving flag must be turned on before the debounceTime, otherwise waiting for save to end before closing won't work
         this.storageService.initiateSaving();
       }),
-      // keep previously emitted environments and filter environments that didn't change (startwith + pairwise)
       debounceTime(1000),
+      // keep previously emitted environments and filter environments that didn't change (startwith + pairwise + map)
       startWith([]),
       pairwise(),
       map(([previousEnvironments, nextEnvironments]) =>
@@ -401,7 +403,10 @@ export class EnvironmentsService extends Logger {
               this.dataService.migrateAndValidateEnvironment(environment);
 
             this.store.update(
-              addEnvironmentAction(validatedEnvironment, filePath, null)
+              addEnvironmentAction(validatedEnvironment, {
+                filePath,
+                afterUUID: null
+              })
             );
             this.uiService.scrollEnvironmentsMenu.next(ScrollDirection.BOTTOM);
           })
