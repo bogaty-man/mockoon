@@ -1,7 +1,7 @@
 import { Export } from '@mockoon/commons';
 import { Config } from 'src/renderer/app/config';
 import { Tests } from 'test/lib/tests';
-import { v1 as uuid } from 'uuid';
+import { v4 as uuid } from 'uuid';
 
 describe('Environments export', () => {
   describe('Export all environments to a file (JSON)', () => {
@@ -10,7 +10,7 @@ describe('Environments export', () => {
     const filePath = `./tmp/storage/${uuid()}.json`;
 
     it('Should create an export file with content', async () => {
-      tests.helpers.mockSaveDialog(filePath);
+      tests.helpers.mockDialog('showSaveDialog', [filePath]);
 
       tests.helpers.selectMenuEntry('EXPORT_FILE');
 
@@ -38,21 +38,6 @@ describe('Environments export', () => {
         ]
       );
     });
-
-    it('Should export data without UUIDs', async () => {
-      await tests.helpers.verifyObjectPropertyInFile(
-        filePath,
-        [
-          'data.0.item.uuid',
-          'data.0.item.routes.0.uuid',
-          'data.0.item.routes.0.responses.0.uuid',
-          'data.1.item.uuid',
-          'data.1.item.routes.0.uuid',
-          'data.1.item.routes.0.responses.0.uuid'
-        ],
-        ['', '', '', '', '', '']
-      );
-    });
   });
 
   describe('Export active environment to a file (JSON)', () => {
@@ -61,7 +46,7 @@ describe('Environments export', () => {
     const filePath = `./tmp/storage/${uuid()}.json`;
 
     it('Should create an export file with content', async () => {
-      tests.helpers.mockSaveDialog(filePath);
+      tests.helpers.mockDialog('showSaveDialog', [filePath]);
 
       tests.helpers.selectMenuEntry('EXPORT_FILE_SELECTED');
 
@@ -75,18 +60,6 @@ describe('Environments export', () => {
         filePath,
         ['source', 'data.0.type', 'data.0.item.name', 'data.1'],
         [`mockoon:${Config.appVersion}`, 'environment', 'Export env', undefined]
-      );
-    });
-
-    it('Should export data without UUIDs', async () => {
-      await tests.helpers.verifyObjectPropertyInFile(
-        filePath,
-        [
-          'data.0.item.uuid',
-          'data.0.item.routes.0.uuid',
-          'data.0.item.routes.0.responses.0.uuid'
-        ],
-        ['', '', '']
       );
     });
   });

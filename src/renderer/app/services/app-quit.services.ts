@@ -40,7 +40,7 @@ export class AppQuitService {
       tap(() => {
         this.closing = true;
 
-        this.store.update(updateUIStateAction({ appClosing: true }));
+        this.store.update(updateUIStateAction({ closing: true }));
 
         this.telemetryService.closeSession();
       }),

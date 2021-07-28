@@ -13,13 +13,22 @@ import {
   SaveDialogReturnValue
 } from 'electron';
 import { OpenAPI, OpenAPIV2, OpenAPIV3 } from 'openapi-types';
+import { EnvironmentDescriptor } from 'src/shared/models/settings.model';
 
 export interface MainAPIModel {
-  invoke<T>(channel: 'APP_READ_JSON_DATA', key: string): Promise<T>;
+  invoke<T>(
+    channel: 'APP_NEW_STORAGE_MIGRATION'
+  ): Promise<EnvironmentDescriptor[]>;
+  invoke<T>(
+    channel: 'APP_READ_JSON_DATA',
+    key: string,
+    path?: string
+  ): Promise<T>;
   invoke<T>(
     channel: 'APP_WRITE_JSON_DATA',
     key: string,
-    data: T
+    data: T,
+    path?: string
   ): Promise<void>;
   invoke(channel: 'APP_READ_CLIPBOARD'): Promise<any>;
   invoke(channel: 'APP_GET_PLATFORM'): Promise<NodeJS.Platform>;
@@ -32,8 +41,11 @@ export interface MainAPIModel {
     options: SaveDialogOptions
   ): Promise<SaveDialogReturnValue>;
   invoke(
-    channel: 'APP_GET_MIME_TYPE' | 'APP_READ_FILE',
-    path: string
+    channel:
+      | 'APP_GET_MIME_TYPE'
+      | 'APP_READ_FILE'
+      | 'APP_BUILD_STORAGE_FILEPATH',
+    pathOrName: string
   ): Promise<string>;
   invoke(channel: 'APP_WRITE_FILE', path: string, data: string): Promise<void>;
   invoke(
@@ -48,8 +60,10 @@ export interface MainAPIModel {
   send(channel: 'APP_WRITE_CLIPBOARD', data: any): void;
   send(
     channel:
-      | 'APP_DISABLE_EXPORT'
-      | 'APP_ENABLE_EXPORT'
+      | 'APP_DISABLE_ENVIRONMENT_MENU_ENTRIES'
+      | 'APP_ENABLE_ENVIRONMENT_MENU_ENTRIES'
+      | 'APP_DISABLE_ROUTE_MENU_ENTRIES'
+      | 'APP_ENABLE_ROUTE_MENU_ENTRIES'
       | 'APP_QUIT'
       | 'APP_APPLY_UPDATE'
   ): void;

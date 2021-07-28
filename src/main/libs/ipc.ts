@@ -9,16 +9,23 @@ import {
   SetFakerSeed
 } from '@mockoon/commons-server';
 import { BrowserWindow, clipboard, dialog, ipcMain, shell } from 'electron';
-import { get as storageGet, set as storageSet } from 'electron-json-storage';
+import {
+  DataOptions,
+  get as storageGet,
+  getDataPath,
+  set as storageSet
+} from 'electron-json-storage';
 import { error as logError, info as logInfo } from 'electron-log';
 import { promises as fsPromises } from 'fs';
 import { lookup as mimeTypeLookup } from 'mime-types';
+import { join as pathJoin, parse as pathParse } from 'path';
 import { promisify } from 'util';
 import {
-  IPCHandlerChannels,
-  IPCListenerChannels
+  IPCMainHandlerChannels,
+  IPCMainListenerChannels
 } from '../constants/ipc.constants';
-import { toggleExportMenuItems } from './menu';
+import { migrateData } from './data-migration';
+import { toggleEnvironmentMenuItems, toggleRouteMenuItems } from './menu';
 import { applyUpdate } from './update';
 
 export const initIPCListeners = (
@@ -33,12 +40,20 @@ export const initIPCListeners = (
     mainWindow.destroy();
   });
 
-  ipcMain.on('APP_DISABLE_EXPORT', () => {
-    toggleExportMenuItems(false);
+  ipcMain.on('APP_DISABLE_ENVIRONMENT_MENU_ENTRIES', () => {
+    toggleEnvironmentMenuItems(false);
   });
 
-  ipcMain.on('APP_ENABLE_EXPORT', () => {
-    toggleExportMenuItems(true);
+  ipcMain.on('APP_ENABLE_ENVIRONMENT_MENU_ENTRIES', () => {
+    toggleEnvironmentMenuItems(true);
+  });
+
+  ipcMain.on('APP_DISABLE_ROUTE_MENU_ENTRIES', () => {
+    toggleRouteMenuItems(false);
+  });
+
+  ipcMain.on('APP_ENABLE_ROUTE_MENU_ENTRIES', () => {
+    toggleRouteMenuItems(true);
   });
 
   ipcMain.on('APP_LOGS', (event, data) => {
@@ -76,12 +91,55 @@ export const initIPCListeners = (
 
   ipcMain.handle(
     'APP_READ_JSON_DATA',
-    async (event, key) => await promisify(storageGet)(key)
+    async (event, key: string, path?: string) => {
+      const options: DataOptions = { dataPath: '' };
+
+      if (path) {
+        const parsedPath = pathParse(path);
+
+        key = parsedPath.name;
+        options.dataPath = parsedPath.dir;
+      }
+      try {
+        const data = await promisify<string, DataOptions, any>(storageGet)(
+          key,
+          options
+        );
+
+        // if object is empty return null instead (electron json storage returns empty object if file does not exists)
+        if (
+          !data ||
+          (Object.keys(data).length === 0 && data.constructor === Object)
+        ) {
+          return null;
+        }
+
+        return data;
+      } catch (error) {
+        // if file empty (JSON.parse error), it will throw
+        return null;
+      }
+    }
   );
 
   ipcMain.handle(
     'APP_WRITE_JSON_DATA',
-    async (event, key, data) => await promisify(storageSet)(key, data)
+    async (event, key, data, path?: string) => {
+      const options: DataOptions = { dataPath: '' };
+
+      if (path) {
+        const parsedPath = pathParse(path);
+
+        key = parsedPath.name;
+        options.dataPath = parsedPath.dir;
+      }
+
+      return await promisify<string, any, DataOptions>(storageSet)(
+        key,
+        data,
+        options
+      );
+    }
   );
 
   ipcMain.handle(
@@ -101,15 +159,19 @@ export const initIPCListeners = (
 
   ipcMain.handle(
     'APP_SHOW_OPEN_DIALOG',
-    async (event, options) => await dialog.showOpenDialog(options)
+    async (event, options) => await dialog.showOpenDialog(mainWindow, options)
   );
 
   ipcMain.handle(
     'APP_SHOW_SAVE_DIALOG',
-    async (event, options) => await dialog.showSaveDialog(options)
+    async (event, options) => await dialog.showSaveDialog(mainWindow, options)
   );
 
   ipcMain.handle('APP_GET_PLATFORM', (event) => process.platform);
+
+  ipcMain.handle('APP_BUILD_STORAGE_FILEPATH', (event, name: string) =>
+    pathJoin(getDataPath(), `${name}.json`)
+  );
 
   ipcMain.handle('APP_GET_MIME_TYPE', (event, filePath) =>
     mimeTypeLookup(filePath)
@@ -210,6 +272,11 @@ export const initIPCListeners = (
       runningServerInstances[environmentUUID].stop();
     }
   });
+
+  ipcMain.handle(
+    'APP_NEW_STORAGE_MIGRATION',
+    async (event) => await migrateData()
+  );
 };
 
 /**
@@ -218,10 +285,10 @@ export const initIPCListeners = (
  * window on macOS
  */
 export const clearIPCChannels = () => {
-  IPCListenerChannels.forEach((listener) => {
+  IPCMainListenerChannels.forEach((listener) => {
     ipcMain.removeAllListeners(listener);
   });
-  IPCHandlerChannels.forEach((handler) => {
+  IPCMainHandlerChannels.forEach((handler) => {
     ipcMain.removeHandler(handler);
   });
 };
