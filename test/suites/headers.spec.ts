@@ -214,6 +214,9 @@ describe('CORS headers', () => {
       key: 'Access-Control-Allow-Origin',
       value: 'https://mockoon.com'
     });
+
+    await tests.helpers.waitForAutosave();
+
     await tests.helpers.httpCallAsserterWithPort(
       getOverriddenCORSHeaders,
       3000

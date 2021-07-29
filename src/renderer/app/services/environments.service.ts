@@ -24,6 +24,7 @@ import {
   withLatestFrom
 } from 'rxjs/operators';
 import { Logger } from 'src/renderer/app/classes/logger';
+import { Config } from 'src/renderer/app/config';
 import { MainAPI } from 'src/renderer/app/constants/common.constants';
 import { EnvironmentSchema } from 'src/renderer/app/constants/environment-schema.constants';
 import { AnalyticsEvents } from 'src/renderer/app/enums/analytics-events.enum';
@@ -194,12 +195,11 @@ export class EnvironmentsService extends Logger {
    */
   public saveEnvironments(): Observable<void> {
     return this.store.select('environments').pipe(
-      distinctUntilChanged(),
       tap(() => {
         // saving flag must be turned on before the debounceTime, otherwise waiting for save to end before closing won't work
         this.storageService.initiateSaving();
       }),
-      debounceTime(1000),
+      debounceTime(Config.storageSaveDelay),
       // keep previously emitted environments and filter environments that didn't change (startwith + pairwise + map)
       startWith([]),
       pairwise(),

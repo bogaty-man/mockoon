@@ -7,6 +7,7 @@ import {
 import { expect } from 'chai';
 import { promises as fs } from 'fs';
 import { get as objectGetPath } from 'object-path';
+import { Config } from 'src/renderer/app/config';
 import { ToastTypes } from 'src/renderer/app/models/toasts.model';
 import {
   EnvironmentLogsTabsNameType,
@@ -431,9 +432,6 @@ export class Helpers {
     port: number,
     hostname: string
   ) {
-    // allow for UI changes to be propagated
-    await this.testsInstance.app.client.pause(1500);
-
     const response = await fetch({
       hostname,
       protocol: httpCall.protocol || 'http',
@@ -672,7 +670,7 @@ export class Helpers {
    * Wait for data autosave
    */
   public async waitForAutosave() {
-    await this.testsInstance.app.client.pause(1500);
+    await this.testsInstance.app.client.pause(Config.storageSaveDelay);
   }
 
   public async verifyObjectPropertyInFile(

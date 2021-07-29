@@ -24,6 +24,7 @@ export const Config = {
   defaultEnvironmentMenuSize: 100,
   defaultRouteMenuSize: 200,
   defaultLogsMenuSize: 150,
+  storageSaveDelay: 1000, // ms
   firebaseConfig: {
     apiKey: 'AIzaSyCIkzTtimLebXjf-gfCQ6iwCVFsYRhCRvs',
     authDomain: 'mockoon-ba3e2.firebaseapp.com',

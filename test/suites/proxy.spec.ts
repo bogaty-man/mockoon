@@ -191,7 +191,8 @@ describe('Proxy (with TLS and proxy headers)', () => {
       getDisabledProxyCall,
       3002
     );
-    await expect(response.headers).to.not.include({
+
+    expect(response.headers).to.not.include({
       'x-proxy-response-header': 'header value'
     });
   });
