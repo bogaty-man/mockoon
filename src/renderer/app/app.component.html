@@ -200,7 +200,6 @@
               <!-- title and back button (flexbox container) -->
               <div>
                 <button
-                  *ngIf="activeRoute$ | async"
                   type="button"
                   class="btn btn-link btn-icon pl-2"
                   (click)="setActiveView('ROUTE')"
@@ -494,7 +493,7 @@
               class="p-2 h-100 d-flex flex-column overflow-hidden"
             >
               <ng-container
-                *ngIf="activeRoute$ | async as activeRoute"
+                *ngIf="activeRoute$ | async as activeRoute; else noActiveRoute"
                 [formGroup]="activeRouteForm"
               >
                 <!-- Method + endpoint + warning + delete -->
@@ -772,6 +771,10 @@
                   </div>
                 </ng-container>
               </ng-container>
+
+              <ng-template #noActiveRoute>
+                <p class="message mt-4">No route defined</p>
+              </ng-template>
 
               <ng-container
                 *ngIf="activeRouteResponse$ | async as activeRouteResponse"
