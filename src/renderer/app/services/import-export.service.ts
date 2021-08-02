@@ -376,7 +376,8 @@ export class ImportExportService extends Logger {
       if (data.type === 'environment') {
         if (data.item.lastMigration > HighestMigrationId) {
           this.logMessage('info', 'ENVIRONMENT_MORE_RECENT_VERSION', {
-            name: data.item.name
+            name: data.item.name,
+            uuid: data.item.uuid
           });
 
           return;

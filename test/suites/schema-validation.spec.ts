@@ -4,6 +4,23 @@ import { Settings } from 'src/shared/models/settings.model';
 import { Tests } from 'test/lib/tests';
 
 describe('Schema validation', () => {
+  describe('Unable to migrate, repair', () => {
+    const tests = new Tests('schema-validation/broken');
+
+    it('should fail migration and repair if too broken (route object missing)', async () => {
+      await tests.helpers.checkToastDisplayed(
+        'warning',
+        'Migration of environment "Missing route object" failed. The environment was automatically repaired and migrated to the latest version.'
+      );
+
+      await tests.helpers.verifyObjectPropertyInFile(
+        './tmp/storage/environment-0.json',
+        ['lastMigration', 'routes'],
+        [16, []]
+      );
+    });
+  });
+
   describe('Generic (test with Settings)', () => {
     const genericTestCases = [
       {
