@@ -1,1 +1,15 @@
-os: osx
+language: node_js
+node_js:
+  - '14'
+matrix:
+  include:
+  - os: osx
+cache:
+  yarn: true
+notifications:
+  email: false
+script:
+  - yarn dist
+deploy:
+  provider: releases
+
