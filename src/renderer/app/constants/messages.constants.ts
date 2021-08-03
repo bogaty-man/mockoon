@@ -127,7 +127,16 @@ export const Messages: {
     showToast: false
   }),
   ENVIRONMENT_MORE_RECENT_VERSION: (messageParams) => ({
-    message: `Environment "${messageParams.name}" was created with a more recent version of Mockoon. Please upgrade.`,
+    message: `Environment "${
+      messageParams.name || messageParams.uuid
+    }" was created with a more recent version of Mockoon. Please upgrade.`,
+    showToast: true,
+    toastType: 'warning'
+  }),
+  ENVIRONMENT_MIGRATION_FAILED: (messageParams) => ({
+    message: `Migration of environment "${
+      messageParams.name || messageParams.uuid
+    }" failed. The environment was automatically repaired and migrated to the latest version.`,
     showToast: true,
     toastType: 'warning'
   })

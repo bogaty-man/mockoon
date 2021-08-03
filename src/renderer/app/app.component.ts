@@ -371,6 +371,13 @@ export class AppComponent implements OnInit, AfterViewInit {
           this.startRouteDuplicationToAnotherEnvironment(payload.subjectUUID);
         }
         break;
+      case 'showInFolder':
+        if (payload.subject === 'environment') {
+          this.environmentsService.showEnvironmentFileInFolder(
+            payload.subjectUUID
+          );
+        }
+        break;
     }
   }
 

@@ -14,6 +14,7 @@ export type ContextMenuItemPayload = {
     | 'duplicateToEnv'
     | 'env_settings'
     | 'env_logs'
+    | 'showInFolder'
     | 'export'
     | 'toggle';
   subjectUUID: string;

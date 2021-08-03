@@ -15,8 +15,7 @@ glob(
       './test/data/import/new/**/*',
       './test/data/import/old/**/*',
       './test/data/migrations/**/*',
-      './test/data/schema-validation/**/*',
-      './test/data/schema-validation-settings/**/*'
+      './test/data/schema-validation/**/*'
     ]
   },
   (error, files) => {

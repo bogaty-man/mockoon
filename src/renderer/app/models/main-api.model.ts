@@ -67,7 +67,10 @@ export interface MainAPIModel {
       | 'APP_QUIT'
       | 'APP_APPLY_UPDATE'
   ): void;
-  send(channel: 'APP_OPEN_EXTERNAL_LINK', url: string): void;
+  send(
+    channel: 'APP_OPEN_EXTERNAL_LINK' | 'APP_SHOW_FILE',
+    urlOrPath: string
+  ): void;
   send(
     channel: 'APP_LOGS',
     data: { type: 'error' | 'info'; message: string }

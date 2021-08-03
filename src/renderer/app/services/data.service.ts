@@ -1,28 +1,93 @@
 import { Injectable } from '@angular/core';
-import { BINARY_BODY, Environment, Route, Transaction } from '@mockoon/commons';
+import {
+  BINARY_BODY,
+  Environment,
+  Environments,
+  HighestMigrationId,
+  Route,
+  Transaction
+} from '@mockoon/commons';
+import { Logger } from 'src/renderer/app/classes/logger';
 import { EnvironmentSchema } from 'src/renderer/app/constants/environment-schema.constants';
 import { EnvironmentLog } from 'src/renderer/app/models/environment-logs.model';
 import { MigrationService } from 'src/renderer/app/services/migration.service';
+import { ToastsService } from 'src/renderer/app/services/toasts.service';
 import { Store } from 'src/renderer/app/stores/store';
 import { v4 as uuid } from 'uuid';
 
 @Injectable({ providedIn: 'root' })
-export class DataService {
+export class DataService extends Logger {
   constructor(
+    protected toastsService: ToastsService,
     private store: Store,
     private migrationService: MigrationService
-  ) {}
+  ) {
+    super('[SERVICE][DATA]', toastsService);
+  }
 
   /**
    * Migrate an environment and validate it against the schema
+   * If migration fails something is missing, it will "repair" the environment
+   * using the schema.
    *
    * @param environment
    * @returns
    */
   public migrateAndValidateEnvironment(environment: Environment): Environment {
-    return EnvironmentSchema.validate(
-      this.migrationService.migrateEnvironment(environment)
-    ).value;
+    let migratedEnvironment: Environment;
+
+    try {
+      migratedEnvironment =
+        this.migrationService.migrateEnvironment(environment);
+    } catch (error) {
+      this.logMessage('error', 'ENVIRONMENT_MIGRATION_FAILED', {
+        name: environment.name,
+        uuid: environment.uuid
+      });
+      migratedEnvironment = environment;
+      migratedEnvironment.lastMigration = HighestMigrationId;
+    }
+
+    return EnvironmentSchema.validate(migratedEnvironment).value;
+  }
+
+  public deduplicateUUIDs(
+    newEnvironment: Environment,
+    environments: Environments
+  ): Environment {
+    const UUIDs: { [key in string]: true } = {};
+    environments.forEach((environment) => {
+      UUIDs[environment.uuid] = true;
+      environment.routes.forEach((route) => {
+        UUIDs[route.uuid] = true;
+
+        route.responses.forEach((response) => {
+          UUIDs[response.uuid] = true;
+        });
+      });
+    });
+
+    if (UUIDs[newEnvironment.uuid]) {
+      newEnvironment.uuid = uuid();
+    }
+    UUIDs[newEnvironment.uuid] = true;
+
+    newEnvironment.routes.forEach((route) => {
+      if (UUIDs[route.uuid]) {
+        route.uuid = uuid();
+      }
+
+      UUIDs[route.uuid] = true;
+
+      route.responses.forEach((response) => {
+        if (UUIDs[response.uuid]) {
+          response.uuid = uuid();
+        }
+        UUIDs[response.uuid] = true;
+      });
+    });
+
+    return newEnvironment;
   }
 
   /**

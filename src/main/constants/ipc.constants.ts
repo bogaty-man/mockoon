@@ -9,7 +9,8 @@ export const IPCMainListenerChannels = [
   'APP_QUIT',
   'APP_SET_FAKER_OPTIONS',
   'APP_UPDATE_ENVIRONMENT',
-  'APP_WRITE_CLIPBOARD'
+  'APP_WRITE_CLIPBOARD',
+  'APP_SHOW_FILE'
 ];
 
 export const IPCMainHandlerChannels = [

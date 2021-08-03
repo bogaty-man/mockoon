@@ -2,12 +2,13 @@ import { Environment } from '@mockoon/commons';
 import * as chai from 'chai';
 import * as chaiAsPromised from 'chai-as-promised';
 import chaiExclude from 'chai-exclude';
+import * as chaiUUID from 'chai-uuid';
 import { IpcRenderer } from 'electron';
 import { constants, promises as fs } from 'fs';
 import * as glob from 'glob';
 import * as mkdirp from 'mkdirp';
 import * as path from 'path';
-import { basename } from 'path';
+import { basename, sep } from 'path';
 import { Application } from 'spectron';
 import { Settings } from 'src/shared/models/settings.model';
 import { Helpers } from 'test/lib/helpers';
@@ -32,6 +33,7 @@ export class Tests {
     chai.should();
     chai.use(chaiAsPromised);
     chai.use(chaiExclude);
+    chai.use(chaiUUID);
 
     this.runHooks();
   }
@@ -172,7 +174,7 @@ export class Tests {
           );
 
           settings.environments.push({
-            path: filePath,
+            path: filePath.replace('/', sep),
             uuid: environment.uuid
           });
         }

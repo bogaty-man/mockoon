@@ -8,7 +8,6 @@ import {
 } from '@angular/core';
 import { Environment, Environments } from '@mockoon/commons';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
 import { EnvironmentsContextMenu } from 'src/renderer/app/components/context-menu/context-menus';
 import { Config } from 'src/renderer/app/config';
 import { ContextMenuEvent } from 'src/renderer/app/models/context-menu.model';
@@ -32,7 +31,6 @@ export class EnvironmentsMenuComponent implements OnInit {
   public environments$: Observable<Environments>;
   public environmentsStatus$: Observable<EnvironmentsStatuses>;
   public duplicatedEnvironments$: Observable<Set<string>>;
-  public environmentFiles$: Observable<{ [key in string]: true | undefined }>;
   public menuSize = Config.defaultEnvironmentMenuSize;
 
   constructor(
@@ -47,15 +45,6 @@ export class EnvironmentsMenuComponent implements OnInit {
     this.duplicatedEnvironments$ = this.store.select('duplicatedEnvironments');
     this.environments$ = this.store.select('environments');
     this.environmentsStatus$ = this.store.select('environmentsStatus');
-    this.environmentFiles$ = this.store.select('settings').pipe(
-      map((settings) =>
-        settings.environments.reduce((savedEnvironments, environment) => {
-          savedEnvironments[environment.uuid] = environment.path;
-
-          return savedEnvironments;
-        }, {})
-      )
-    );
     this.uiService.scrollEnvironmentsMenu.subscribe((scrollDirection) => {
       this.uiService.scroll(
         this.environmentsMenu.nativeElement,

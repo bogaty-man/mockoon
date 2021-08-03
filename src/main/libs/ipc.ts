@@ -64,6 +64,10 @@ export const initIPCListeners = (
     }
   });
 
+  ipcMain.on('APP_SHOW_FILE', (event, path) => {
+    shell.showItemInFolder(path);
+  });
+
   ipcMain.on('APP_OPEN_EXTERNAL_LINK', (event, url) => {
     shell.openExternal(url);
   });

@@ -80,7 +80,6 @@ import {
   TabsNameType,
   ViewsNameType
 } from 'src/renderer/app/stores/store';
-import { EnvironmentDescriptor } from 'src/shared/models/settings.model';
 
 @Injectable({
   providedIn: 'root'
@@ -106,7 +105,7 @@ export class EnvironmentsService extends Logger {
    * @returns
    */
   public loadEnvironments(): Observable<
-    { environment: Environment; descriptor: EnvironmentDescriptor }[]
+    { environment: Environment; path: string }[]
   > {
     return forkJoin([
       this.store.select('settings').pipe(
@@ -125,10 +124,7 @@ export class EnvironmentsService extends Logger {
           return of([
             {
               environment: defaultEnvironment,
-              descriptor: {
-                uuid: defaultEnvironment.uuid,
-                path: demoFilePath
-              }
+              path: demoFilePath
             }
           ]);
         }
@@ -142,10 +138,7 @@ export class EnvironmentsService extends Logger {
                   environment
                     ? {
                         environment,
-                        descriptor: {
-                          uuid: environment.uuid,
-                          path: environmentItem.path
-                        }
+                        path: environmentItem.path
                       }
                     : null
                 )
@@ -164,11 +157,19 @@ export class EnvironmentsService extends Logger {
       ),
       tap((environmentsData) => {
         environmentsData.forEach((environmentData) => {
+          const validatedEnvironment =
+            this.dataService.migrateAndValidateEnvironment(
+              environmentData.environment
+            );
+          // deduplicate UUIDs
+          environmentData.environment = this.dataService.deduplicateUUIDs(
+            validatedEnvironment,
+            this.store.get('environments')
+          );
+
           this.store.update(
             addEnvironmentAction(
-              this.dataService.migrateAndValidateEnvironment(
-                environmentData.environment
-              ),
+              environmentData.environment,
               // keep the first environment as active during load
               { activeEnvironment: environmentsData[0].environment }
             )
@@ -177,9 +178,10 @@ export class EnvironmentsService extends Logger {
 
         this.store.update(
           updateSettingsAction({
-            environments: environmentsData.map(
-              (environmentData) => environmentData.descriptor
-            )
+            environments: environmentsData.map((environmentData) => ({
+              uuid: environmentData.environment.uuid,
+              path: environmentData.path
+            }))
           })
         );
       })
@@ -317,9 +319,15 @@ export class EnvironmentsService extends Logger {
         return EMPTY;
       }),
       tap((filePath) => {
-        const newEnvironment = environment
+        let newEnvironment = environment
           ? EnvironmentSchema.validate(environment).value
           : this.schemasBuilderService.buildEnvironment();
+
+        // deduplicate UUIDs
+        newEnvironment = this.dataService.deduplicateUUIDs(
+          newEnvironment,
+          this.store.get('environments')
+        );
 
         this.store.update(
           addEnvironmentAction(newEnvironment, { filePath, afterUUID })
@@ -392,14 +400,21 @@ export class EnvironmentsService extends Logger {
           tap((environment) => {
             if (environment.lastMigration > HighestMigrationId) {
               this.logMessage('info', 'ENVIRONMENT_MORE_RECENT_VERSION', {
-                name: environment.name
+                name: environment.name,
+                uuid: environment.uuid
               });
 
               return;
             }
 
-            const validatedEnvironment =
+            let validatedEnvironment =
               this.dataService.migrateAndValidateEnvironment(environment);
+
+            // deduplicate UUIDs
+            validatedEnvironment = this.dataService.deduplicateUUIDs(
+              validatedEnvironment,
+              this.store.get('environments')
+            );
 
             this.store.update(
               addEnvironmentAction(validatedEnvironment, {
@@ -766,5 +781,19 @@ export class EnvironmentsService extends Logger {
     this.store.update(
       startRouteDuplicationToAnotherEnvironmentAction(routeUUID)
     );
+  }
+
+  /**
+   * Reveal an environment file in a folder
+   *
+   * @param environmentUUID
+   */
+  public showEnvironmentFileInFolder(environmentUUID: string) {
+    const settings = this.store.get('settings');
+    const environmentPath = settings.environments.find(
+      (environment) => environment.uuid === environmentUUID
+    ).path;
+
+    MainAPI.send('APP_SHOW_FILE', environmentPath);
   }
 }

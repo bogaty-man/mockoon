@@ -88,7 +88,7 @@ export const RouteSchema = Joi.object<Route>({
     .failover(RouteDefault.documentation)
     .required(),
   method: Joi.string()
-    .allow('get', 'post', 'put', 'patch', 'delete', 'head', 'options')
+    .valid('get', 'post', 'put', 'patch', 'delete', 'head', 'options')
     .failover(RouteDefault.method)
     .required(),
   endpoint: Joi.string().allow('').failover(RouteDefault.endpoint).required(),
@@ -128,7 +128,7 @@ export const RouteSchema = Joi.object<Route>({
           .items(
             Joi.object<ResponseRule>({
               target: Joi.string()
-                .allow(
+                .valid(
                   null,
                   'body',
                   'query',
@@ -155,7 +155,7 @@ export const RouteSchema = Joi.object<Route>({
           .failover(RouteResponseDefault.rules)
           .required(),
         rulesOperator: Joi.string()
-          .allow('OR', 'AND')
+          .valid('OR', 'AND')
           .failover(RouteResponseDefault.rulesOperator)
           .required(),
         disableTemplating: Joi.boolean()

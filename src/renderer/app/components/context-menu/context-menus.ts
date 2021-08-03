@@ -49,6 +49,17 @@ export const EnvironmentsContextMenu = (
   {
     payload: {
       subject: 'environment',
+      action: 'showInFolder',
+      subjectUUID: environmentUUID
+    },
+    label: 'Show in folder',
+    icon: 'folder',
+    separator: true,
+    disabled: false
+  },
+  {
+    payload: {
+      subject: 'environment',
       action: 'close',
       subjectUUID: environmentUUID
     },
