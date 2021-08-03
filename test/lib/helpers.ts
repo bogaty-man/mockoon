@@ -128,7 +128,7 @@ export class Helpers {
   public async closeEnvironment(index: number) {
     await this.contextMenuClick(
       `.environments-menu .menu-list .nav-item:nth-child(${index}) .nav-link`,
-      5
+      6
     );
     await this.testsInstance.app.client.pause(500);
   }
