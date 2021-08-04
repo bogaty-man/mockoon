@@ -8,9 +8,10 @@ matrix:
         - ELECTRON_CACHE=$HOME/.cache/electron
         - ELECTRON_BUILDER_CACHE=$HOME/.cache/electron-builder
 script:
-  - | 
-    brew install angular-cli && \
-    npm ci && npm run build:prod:all && npm run package:mac
+  - brew install angular-cli && \
+  - npm ci
+  - npm run build:prod:all
+  - npm run package:mac
 cache:
   directories:
     - node_modules
